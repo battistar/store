@@ -1,0 +1,9 @@
+dist
+node_modules
+.nyc_output
+.gitignore
+.env
+.env_example
+.eslintrc.json
+.prettierrc.json
+README.md
