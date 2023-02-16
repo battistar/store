@@ -1,7 +1,7 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { ProductProvider } from 'store';
 import Root from 'pages/Root';
-import Home from 'pages/Home';
+import Store from 'pages/Store';
 
 const router = createBrowserRouter([
   {
@@ -10,7 +10,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Home />,
+        element: <Navigate to="/store" replace />,
+      },
+      {
+        path: '/store',
+        element: <Store />,
       },
     ],
   },

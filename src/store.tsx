@@ -20,17 +20,28 @@ interface ProductListPage {
 
 type ProductState = {
   page: ProductListPage;
+  isLoading: boolean;
   error?: Error;
 };
 
-type ProductAction = { type: 'SET_PAGE'; payload: ProductListPage } | { type: 'SET_ERROR'; payload: Error };
+type ProductAction =
+  | { type: 'SET_PAGE'; payload: ProductListPage }
+  | { type: 'SET_ERROR'; payload: Error }
+  | { type: 'SET_IS_LOADING'; payload: boolean };
 
-const useProductSource = (): { page: ProductListPage; fetchData: (page: number) => Promise<void>; error?: Error } => {
+const useProductSource = (): {
+  page: ProductListPage;
+  fetchData: (page: number) => Promise<void>;
+  isLoading: boolean;
+  error?: Error;
+} => {
   const [source, dispatch] = useReducer(
     (state: ProductState, action: ProductAction) => {
       switch (action.type) {
         case 'SET_PAGE':
           return { ...state, page: action.payload };
+        case 'SET_IS_LOADING':
+          return { ...state, isLoading: action.payload };
         case 'SET_ERROR':
           return { ...state, error: action.payload };
       }
@@ -41,10 +52,13 @@ const useProductSource = (): { page: ProductListPage; fetchData: (page: number) 
         currentPage: 0,
         totalPages: 0,
       },
+      isLoading: true,
     }
   );
 
   const fetchData = useCallback(async (page = 1): Promise<void> => {
+    dispatch({ type: 'SET_IS_LOADING', payload: true });
+
     try {
       const skip = (page - 1) * DEFAULT_PAGE_SIZE;
       const response = await getProducts(skip);
@@ -59,6 +73,8 @@ const useProductSource = (): { page: ProductListPage; fetchData: (page: number) 
       console.error(e);
 
       dispatch({ type: 'SET_ERROR', payload: e as Error });
+    } finally {
+      dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
   }, []);
 
@@ -66,7 +82,7 @@ const useProductSource = (): { page: ProductListPage; fetchData: (page: number) 
     fetchData();
   }, [fetchData]);
 
-  return { page: source.page, fetchData: fetchData, error: source.error };
+  return { page: source.page, fetchData: fetchData, isLoading: source.isLoading, error: source.error };
 };
 
 const ProductContext = createContext<ReturnType<typeof useProductSource>>({} as ReturnType<typeof useProductSource>);
