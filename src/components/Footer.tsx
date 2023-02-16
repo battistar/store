@@ -17,7 +17,7 @@ const Footer = (): JSX.Element => {
         <Typography variant="body2" component="span">
           © {date} Samuele Battistella
         </Typography>
-        <Link variant="body2" underline="hover" color="inherit" href="https://dummyjson.com/">
+        <Link variant="body2" underline="hover" color="inherit" href="https://dummyjson.com/" target="_blank">
           Powered by dummyjson.com
         </Link>
       </Stack>
