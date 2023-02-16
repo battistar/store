@@ -22,7 +22,7 @@ const ProductCard = ({ product }: ProductCardProps): JSX.Element => {
   return (
     <Card>
       <CardActionArea>
-        <CardMedia sx={{ height: 240, m: 2 }} image={product.thumbnail} title={product.title} />
+        <CardMedia sx={{ height: 240, borderRadius: '4px', m: 2 }} image={product.thumbnail} title={product.title} />
         <CardContent>
           <Typography
             gutterBottom
