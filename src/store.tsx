@@ -1,6 +1,6 @@
 import { getProducts } from 'http/client';
 import Product from 'models/Product';
-import { createContext, useCallback, useContext, useEffect, useReducer } from 'react';
+import { createContext, useCallback, useContext, useReducer } from 'react';
 
 const DEFAULT_PAGE_SIZE = 30;
 
@@ -19,7 +19,7 @@ interface ProductListPage {
 }
 
 type ProductState = {
-  page: ProductListPage;
+  data: ProductListPage;
   isLoading: boolean;
   error?: Error;
 };
@@ -30,7 +30,7 @@ type ProductAction =
   | { type: 'SET_IS_LOADING'; payload: boolean };
 
 const useProductSource = (): {
-  page: ProductListPage;
+  data: ProductListPage;
   fetchData: (page: number) => Promise<void>;
   isLoading: boolean;
   error?: Error;
@@ -39,7 +39,7 @@ const useProductSource = (): {
     (state: ProductState, action: ProductAction) => {
       switch (action.type) {
         case 'SET_PAGE':
-          return { ...state, page: action.payload };
+          return { ...state, data: action.payload };
         case 'SET_IS_LOADING':
           return { ...state, isLoading: action.payload };
         case 'SET_ERROR':
@@ -47,7 +47,7 @@ const useProductSource = (): {
       }
     },
     {
-      page: {
+      data: {
         products: [],
         currentPage: 0,
         totalPages: 0,
@@ -78,11 +78,7 @@ const useProductSource = (): {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return { page: source.page, fetchData: fetchData, isLoading: source.isLoading, error: source.error };
+  return { data: source.data, fetchData: fetchData, isLoading: source.isLoading, error: source.error };
 };
 
 const ProductContext = createContext<ReturnType<typeof useProductSource>>({} as ReturnType<typeof useProductSource>);
