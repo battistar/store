@@ -37,20 +37,6 @@ const ProductCard = ({ product }: ProductCardProps): JSX.Element => {
           >
             {product.title}
           </Typography>
-          <Typography
-            gutterBottom
-            variant="body2"
-            color="text.secondary"
-            component="div"
-            sx={{
-              display: '-webkit-box',
-              WebkitLineClamp: '1',
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {product.description}
-          </Typography>
           <Rating rating={product.rating} sx={{ my: 1 }} />
           <Stack direction="row" gap={1} alignItems="center">
             <Typography gutterBottom variant="h6" component="div">
