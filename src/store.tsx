@@ -1,4 +1,4 @@
-import { getProducts } from 'http/client';
+import { getProduct, getProducts } from 'http/client';
 import Product from 'models/Product';
 import { createContext, useCallback, useContext, useReducer } from 'react';
 
@@ -26,12 +26,13 @@ type ProductState = {
 
 type ProductAction =
   | { type: 'SET_PAGE'; payload: ProductListPage }
-  | { type: 'SET_ERROR'; payload: Error }
+  | { type: 'SET_ERROR'; payload?: Error }
   | { type: 'SET_IS_LOADING'; payload: boolean };
 
 const useProductSource = (): {
   data: ProductListPage;
   fetchData: (page: number) => Promise<void>;
+  fetchProduct: (id: number) => Promise<Product | null>;
   isLoading: boolean;
   error?: Error;
 } => {
@@ -58,6 +59,7 @@ const useProductSource = (): {
 
   const fetchData = useCallback(async (page = 1): Promise<void> => {
     dispatch({ type: 'SET_IS_LOADING', payload: true });
+    dispatch({ type: 'SET_ERROR', payload: undefined });
 
     try {
       const skip = (page - 1) * DEFAULT_PAGE_SIZE;
@@ -78,7 +80,42 @@ const useProductSource = (): {
     }
   }, []);
 
-  return { data: source.data, fetchData: fetchData, isLoading: source.isLoading, error: source.error };
+  const fetchProduct = useCallback(
+    async (id: number): Promise<Product | null> => {
+      dispatch({ type: 'SET_IS_LOADING', payload: true });
+      dispatch({ type: 'SET_ERROR', payload: undefined });
+
+      const result = source.data.products.find((product) => product.id === id);
+      if (result) {
+        dispatch({ type: 'SET_IS_LOADING', payload: false });
+
+        return result;
+      }
+
+      try {
+        const response = await getProduct(id);
+
+        return response.data;
+      } catch (e) {
+        console.error(e);
+
+        dispatch({ type: 'SET_ERROR', payload: e as Error });
+      } finally {
+        dispatch({ type: 'SET_IS_LOADING', payload: false });
+      }
+
+      return null;
+    },
+    [source.data.products]
+  );
+
+  return {
+    data: source.data,
+    fetchData: fetchData,
+    fetchProduct: fetchProduct,
+    isLoading: source.isLoading,
+    error: source.error,
+  };
 };
 
 const ProductContext = createContext<ReturnType<typeof useProductSource>>({} as ReturnType<typeof useProductSource>);

@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import Product from 'models/Product';
 import ProductPage from 'models/ProductPage';
 
 const httpClient = axios.create({
@@ -14,4 +15,8 @@ export const getProducts = async (skip = 0): Promise<AxiosResponse<ProductPage>>
   };
 
   return await httpClient.get<ProductPage>('/products', { params: params });
+};
+
+export const getProduct = async (id: number): Promise<AxiosResponse<Product>> => {
+  return await httpClient.get<Product>(`/products/${id}`);
 };

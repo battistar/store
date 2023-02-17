@@ -13,15 +13,22 @@ import {
 import { AddShoppingCart as AddToCartIcon } from '@mui/icons-material';
 import Product from 'models/Product';
 import Rating from './Rating';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard = ({ product }: ProductCardProps): JSX.Element => {
+  const navigate = useNavigate();
+
+  const handleClick = (): void => {
+    navigate(`product/${product.id}`);
+  };
+
   return (
     <Card>
-      <CardActionArea>
+      <CardActionArea onClick={handleClick}>
         <CardMedia sx={{ height: 240, borderRadius: '4px', m: 2 }} image={product.thumbnail} title={product.title} />
         <CardContent>
           <Typography
