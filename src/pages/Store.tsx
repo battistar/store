@@ -3,7 +3,7 @@ import Loader from 'components/Loader';
 import ProductCard from 'components/ProductCard';
 import { ReactNode, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useProduct } from 'store';
+import { useProduct } from 'providers/store';
 
 const Store = (): JSX.Element => {
   const { data, fetchData, isLoading } = useProduct();

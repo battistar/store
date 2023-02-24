@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
-import { ProductProvider } from 'store';
+import { ProductProvider } from 'providers/store';
 import Root from 'pages/Root';
 import Store from 'pages/Store';
 import Product from 'pages/Product';

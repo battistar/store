@@ -4,7 +4,7 @@ import ProductDetailCard from 'components/ProductDetailCard';
 import Product from 'models/Product';
 import { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
-import { useProduct } from 'store';
+import { useProduct } from 'providers/store';
 
 const CheckProduct = (): JSX.Element => {
   const [data, setData] = useState<Product | null>(null);
