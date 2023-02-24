@@ -6,15 +6,15 @@ import { Link, useLocation } from 'react-router-dom';
 import { useProduct } from 'providers/store';
 
 const Store = (): JSX.Element => {
-  const { data, fetchData, isLoading } = useProduct();
+  const { data, loadPage, isLoading } = useProduct();
   const location = useLocation();
 
   const query = new URLSearchParams(location.search);
   const page = parseInt(query.get('page') || '1');
 
   useEffect(() => {
-    fetchData(page);
-  }, [fetchData, page]);
+    loadPage(page);
+  }, [loadPage, page]);
 
   return (
     <>

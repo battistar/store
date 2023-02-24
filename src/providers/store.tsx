@@ -1,6 +1,6 @@
 import { getProduct, getProducts } from 'http/client';
 import Product from 'models/Product';
-import { createContext, useCallback, useContext, useReducer } from 'react';
+import { createContext, useCallback, useContext, useEffect, useReducer } from 'react';
 
 const DEFAULT_PAGE_SIZE = 30;
 
@@ -20,18 +20,20 @@ interface ProductListPage {
 
 type ProductState = {
   data: ProductListPage;
+  page?: number;
   isLoading: boolean;
   error?: Error;
 };
 
 type ProductAction =
-  | { type: 'SET_PAGE'; payload: ProductListPage }
+  | { type: 'SET_DATA'; payload: ProductListPage }
+  | { type: 'SET_PAGE'; payload?: number }
   | { type: 'SET_ERROR'; payload?: Error }
   | { type: 'SET_IS_LOADING'; payload: boolean };
 
 const useProductSource = (): {
   data: ProductListPage;
-  fetchData: (page: number) => Promise<void>;
+  loadPage: (page: number) => void;
   fetchProduct: (id: number) => Promise<Product | null>;
   isLoading: boolean;
   error?: Error;
@@ -39,8 +41,10 @@ const useProductSource = (): {
   const [source, dispatch] = useReducer(
     (state: ProductState, action: ProductAction) => {
       switch (action.type) {
-        case 'SET_PAGE':
+        case 'SET_DATA':
           return { ...state, data: action.payload };
+        case 'SET_PAGE':
+          return { ...state, page: action.payload };
         case 'SET_IS_LOADING':
           return { ...state, isLoading: action.payload };
         case 'SET_ERROR':
@@ -57,27 +61,39 @@ const useProductSource = (): {
     }
   );
 
-  const fetchData = useCallback(async (page = 1): Promise<void> => {
-    dispatch({ type: 'SET_IS_LOADING', payload: true });
-    dispatch({ type: 'SET_ERROR', payload: undefined });
+  useEffect(() => {
+    const fetchData = async (): Promise<void> => {
+      if (!source.page) {
+        return;
+      }
 
-    try {
-      const skip = (page - 1) * DEFAULT_PAGE_SIZE;
-      const response = await getProducts(skip);
+      dispatch({ type: 'SET_IS_LOADING', payload: true });
+      dispatch({ type: 'SET_ERROR', payload: undefined });
 
-      const productPage = {
-        products: response.data.products,
-        currentPage: currentPage(response.data.skip),
-        totalPages: totalPages(response.data.total),
-      };
-      dispatch({ type: 'SET_PAGE', payload: productPage });
-    } catch (e) {
-      console.error(e);
+      try {
+        const skip = (source.page - 1) * DEFAULT_PAGE_SIZE;
+        const response = await getProducts(skip);
 
-      dispatch({ type: 'SET_ERROR', payload: e as Error });
-    } finally {
-      dispatch({ type: 'SET_IS_LOADING', payload: false });
-    }
+        const productPage = {
+          products: response.data.products,
+          currentPage: currentPage(response.data.skip),
+          totalPages: totalPages(response.data.total),
+        };
+        dispatch({ type: 'SET_DATA', payload: productPage });
+      } catch (e) {
+        console.error(e);
+
+        dispatch({ type: 'SET_ERROR', payload: e as Error });
+      } finally {
+        dispatch({ type: 'SET_IS_LOADING', payload: false });
+      }
+    };
+
+    fetchData();
+  }, [source.page]);
+
+  const loadPage = useCallback((page = 1): void => {
+    dispatch({ type: 'SET_PAGE', payload: page });
   }, []);
 
   const fetchProduct = useCallback(
@@ -111,7 +127,7 @@ const useProductSource = (): {
 
   return {
     data: source.data,
-    fetchData: fetchData,
+    loadPage: loadPage,
     fetchProduct: fetchProduct,
     isLoading: source.isLoading,
     error: source.error,
