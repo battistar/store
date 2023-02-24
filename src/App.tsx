@@ -1,9 +1,12 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { ProductProvider } from 'providers/store';
+import { UserProvider } from 'providers/user';
 import Root from 'pages/Root';
 import Store from 'pages/Store';
 import Product from 'pages/Product';
+import Login from 'pages/Login';
 import Error from 'pages/Error';
+import { SnackbarProvider } from 'notistack';
 
 const router = createBrowserRouter([
   {
@@ -25,6 +28,10 @@ const router = createBrowserRouter([
     ],
   },
   {
+    path: 'login',
+    element: <Login />,
+  },
+  {
     path: 'error',
     element: <Error />,
   },
@@ -37,7 +44,11 @@ const router = createBrowserRouter([
 const App = (): JSX.Element => {
   return (
     <ProductProvider>
-      <RouterProvider router={router} />
+      <UserProvider>
+        <SnackbarProvider preventDuplicate anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+          <RouterProvider router={router} />
+        </SnackbarProvider>
+      </UserProvider>
     </ProductProvider>
   );
 };

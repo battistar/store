@@ -1,22 +1,22 @@
-import { useEffect, useReducer, createContext, useContext } from 'react';
+import { useEffect, useReducer, createContext, useContext, useCallback } from 'react';
 import User from 'models/User';
 import { login as httpLogin } from 'http/client';
 
 const LOCAL_STORAGE_USER_DATA = 'user-data';
 
 type UserState = {
-  user: User;
+  user: User | null;
   isLoading: boolean;
   error?: Error;
 };
 
 type UserAction =
-  | { type: 'SET_USER'; payload: User }
+  | { type: 'SET_USER'; payload: User | null }
   | { type: 'SET_ERROR'; payload?: Error }
   | { type: 'SET_IS_LOADING'; payload: boolean };
 
 const useUserSource = (): {
-  user: User;
+  user: User | null;
   login: (usernma: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
@@ -34,7 +34,7 @@ const useUserSource = (): {
       }
     },
     {
-      user: {} as User,
+      user: null,
       isLoading: false,
     }
   );
@@ -48,12 +48,14 @@ const useUserSource = (): {
     }
   }, []);
 
-  const login = async (username: string, password: string): Promise<void> => {
+  const login = useCallback(async (username: string, password: string): Promise<void> => {
     dispatch({ type: 'SET_IS_LOADING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: undefined });
 
     try {
       const response = await httpLogin(username, password);
+
+      localStorage.setItem(LOCAL_STORAGE_USER_DATA, JSON.stringify(response.data));
 
       dispatch({ type: 'SET_USER', payload: response.data });
     } catch (err) {
@@ -61,21 +63,23 @@ const useUserSource = (): {
     } finally {
       dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
-  };
+  }, []);
 
-  const logout = (): void => {
+  const logout = useCallback((): void => {
     localStorage.removeItem(LOCAL_STORAGE_USER_DATA);
-  };
+
+    dispatch({ type: 'SET_USER', payload: null });
+  }, []);
 
   return { user: data.user, login: login, logout: logout, isLoading: data.isLoading, error: data.error };
 };
 
 const UserContext = createContext<ReturnType<typeof useUserSource>>({} as ReturnType<typeof useUserSource>);
 
-export const useProduct = (): ReturnType<typeof useUserSource> => {
+export const useUser = (): ReturnType<typeof useUserSource> => {
   return useContext(UserContext);
 };
 
-export const ProductProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
+export const UserProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
   return <UserContext.Provider value={useUserSource()}>{children}</UserContext.Provider>;
 };
