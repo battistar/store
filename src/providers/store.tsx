@@ -79,6 +79,7 @@ const useProductSource = (): {
           currentPage: currentPage(response.data.skip),
           totalPages: totalPages(response.data.total),
         };
+
         dispatch({ type: 'SET_DATA', payload: productPage });
       } catch (e) {
         console.error(e);
