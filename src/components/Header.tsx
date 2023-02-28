@@ -1,8 +1,10 @@
 import {
   AppBar,
   Avatar,
+  Badge,
   Box,
   Container,
+  Divider,
   IconButton,
   ListItemIcon,
   ListItemText,
@@ -11,13 +13,15 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { Paid as MoneyIcon, Login as LoginIcon } from '@mui/icons-material';
+import { Paid as MoneyIcon, Login as LoginIcon, ShoppingCart as CartIcon } from '@mui/icons-material';
 import { useUser } from 'providers/user';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useCart } from 'providers/cart';
 
 const Header = (): JSX.Element => {
   const { user, logout } = useUser();
+  const { cart } = useCart();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
@@ -85,8 +89,22 @@ const Header = (): JSX.Element => {
 
       {user ? (
         <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>
-          <MenuItem>{`Hi ${user.firstName} ${user.lastName}`}</MenuItem>
-          <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
+          <MenuItem disabled sx={{ opacity: '1 !important' }}>{`Hi! ${user.firstName} ${user.lastName}`}</MenuItem>
+          <Divider />
+          <MenuItem onClick={handleMenuClose}>
+            <ListItemIcon>
+              <Badge badgeContent={cart ? cart.totalProducts : 0} color="primary">
+                <CartIcon fontSize="small" />
+              </Badge>
+            </ListItemIcon>
+            <ListItemText>Cart</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleLogoutClick}>
+            <ListItemIcon>
+              <LoginIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Logout</ListItemText>
+          </MenuItem>
         </Menu>
       ) : (
         <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>

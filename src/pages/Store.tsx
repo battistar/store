@@ -1,12 +1,17 @@
 import { Stack, Container, Grid, Pagination, PaginationItem } from '@mui/material';
 import Loader from 'components/Loader';
 import ProductCard from 'components/ProductCard';
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useCallback, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useProduct } from 'providers/store';
+import { useCart } from 'providers/cart';
+import axios from 'axios';
+import { useSnackbar } from 'notistack';
 
 const Store = (): JSX.Element => {
-  const { data, loadPage, isLoading } = useProduct();
+  const { data, loadPage, isLoading: storeIsLoading } = useProduct();
+  const { addToCart, isLoading: cartIsLoading, error: cartError } = useCart();
+  const { enqueueSnackbar } = useSnackbar();
   const location = useLocation();
 
   const query = new URLSearchParams(location.search);
@@ -16,6 +21,31 @@ const Store = (): JSX.Element => {
     loadPage(page);
   }, [loadPage, page]);
 
+  useEffect(() => {
+    if (cartError) {
+      if (axios.isAxiosError(cartError)) {
+        if (cartError.response?.status === 400) {
+          enqueueSnackbar(cartError.response.data.message, {
+            variant: 'error',
+          });
+        } else {
+          enqueueSnackbar(`${cartError.response?.status} - ${cartError.response?.statusText}`, {
+            variant: 'error',
+          });
+        }
+      } else {
+        enqueueSnackbar('Unknown error', { variant: 'error' });
+      }
+    }
+  }, [cartError, enqueueSnackbar]);
+
+  const handleClick = useCallback(
+    async (id: number): Promise<void> => {
+      addToCart(id);
+    },
+    [addToCart]
+  );
+
   return (
     <>
       <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3 } }}>
@@ -24,7 +54,7 @@ const Store = (): JSX.Element => {
             {data.products.map((product) => {
               return (
                 <Grid key={product.id} item xs={12} sm={6} md={4}>
-                  <ProductCard product={product} />
+                  <ProductCard product={product} onClick={handleClick} />
                 </Grid>
               );
             })}
@@ -39,7 +69,7 @@ const Store = (): JSX.Element => {
         </Stack>
       </Container>
 
-      {isLoading && <Loader />}
+      {(storeIsLoading || cartIsLoading) && <Loader />}
     </>
   );
 };
