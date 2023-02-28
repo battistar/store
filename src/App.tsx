@@ -7,6 +7,7 @@ import Product from 'pages/Product';
 import Login from 'pages/Login';
 import Error from 'pages/Error';
 import { SnackbarProvider } from 'notistack';
+import { CartProvider } from 'providers/cart';
 
 const router = createBrowserRouter([
   {
@@ -43,13 +44,15 @@ const router = createBrowserRouter([
 
 const App = (): JSX.Element => {
   return (
-    <ProductProvider>
-      <UserProvider>
-        <SnackbarProvider preventDuplicate anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-          <RouterProvider router={router} />
-        </SnackbarProvider>
-      </UserProvider>
-    </ProductProvider>
+    <UserProvider>
+      <CartProvider>
+        <ProductProvider>
+          <SnackbarProvider preventDuplicate anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+            <RouterProvider router={router} />
+          </SnackbarProvider>
+        </ProductProvider>
+      </CartProvider>
+    </UserProvider>
   );
 };
 
