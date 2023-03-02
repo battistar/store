@@ -3,6 +3,7 @@ import Product from 'models/Product';
 import User from 'models/User';
 import ProductPage from 'models/ProductPage';
 import CartPage from 'models/CartPage';
+import Cart from 'models/Cart';
 
 const BASE_URL = 'https://dummyjson.com';
 
@@ -58,7 +59,7 @@ export const getCart = async (userID: number): Promise<AxiosResponse<CartPage>> 
   return await authClient.get<CartPage>(`/carts/user/${userID}`);
 };
 
-export const updateCart = async (cartID: number, productID: number, add = true): Promise<AxiosResponse<CartPage>> => {
+export const updateCart = async (cartID: number, productID: number, add = true): Promise<AxiosResponse<Cart>> => {
   const data = {
     merge: true,
     products: [
@@ -69,5 +70,5 @@ export const updateCart = async (cartID: number, productID: number, add = true):
     ],
   };
 
-  return await authClient.put(`/carts/${cartID}`, data);
+  return await authClient.put<Cart>(`/carts/${cartID}`, data);
 };
