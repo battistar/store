@@ -91,8 +91,8 @@ const ProductDetailCard = ({ product, onClick }: ProductDetailCardProps): JSX.El
               In stock: {product.stock}
             </Typography>
             <Stack direction="row" gap={1} mt={2}>
-              <Chip size="small" label={product.brand} sx={{ '&:hover': { cursor: 'pointer' } }} />
-              <Chip size="small" label={product.category} sx={{ '&:hover': { cursor: 'pointer' } }} />
+              <Chip size="small" label={product.brand} />
+              <Chip size="small" label={product.category} />
             </Stack>
           </CardContent>
           <div>
