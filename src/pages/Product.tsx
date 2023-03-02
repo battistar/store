@@ -57,8 +57,10 @@ const ProductPage = ({ product }: { product: Product }): JSX.Element => {
   const handleClick = useCallback(
     async (id: number): Promise<void> => {
       await addToCart(id);
+
+      enqueueSnackbar('Item added to cart', { variant: 'success' });
     },
-    [addToCart]
+    [addToCart, enqueueSnackbar]
   );
 
   return (
