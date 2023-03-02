@@ -24,7 +24,7 @@ const Store = (): JSX.Element => {
   useEffect(() => {
     if (cartError) {
       if (axios.isAxiosError(cartError)) {
-        if (cartError.response?.status === 400) {
+        if (cartError.response?.data.message) {
           enqueueSnackbar(cartError.response.data.message, {
             variant: 'error',
           });
@@ -41,9 +41,11 @@ const Store = (): JSX.Element => {
 
   const handleClick = useCallback(
     async (id: number): Promise<void> => {
-      addToCart(id);
+      await addToCart(id);
+
+      enqueueSnackbar('Item added to cart', { variant: 'success' });
     },
-    [addToCart]
+    [addToCart, enqueueSnackbar]
   );
 
   return (
