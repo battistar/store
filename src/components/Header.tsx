@@ -47,6 +47,12 @@ const Header = (): JSX.Element => {
     navigate('/');
   };
 
+  const handleCartClick = (): void => {
+    setAnchorEl(null);
+
+    navigate('/store/cart');
+  };
+
   return (
     <>
       <AppBar component="header" position="static">
@@ -91,7 +97,7 @@ const Header = (): JSX.Element => {
         <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>
           <MenuItem disabled sx={{ opacity: '1 !important' }}>{`Hi! ${user.firstName} ${user.lastName}`}</MenuItem>
           <Divider />
-          <MenuItem onClick={handleMenuClose}>
+          <MenuItem onClick={handleCartClick}>
             <ListItemIcon>
               <Badge badgeContent={cart ? cart.totalProducts : 0} color="primary">
                 <CartIcon fontSize="small" />

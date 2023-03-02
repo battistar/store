@@ -8,6 +8,7 @@ import Login from 'pages/Login';
 import Error from 'pages/Error';
 import { SnackbarProvider } from 'notistack';
 import { CartProvider } from 'providers/cart';
+import Cart from 'pages/Cart';
 
 const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
       {
         path: 'store/product/:id',
         element: <Product />,
+      },
+      {
+        path: 'store/cart',
+        element: <Cart />,
       },
     ],
   },
