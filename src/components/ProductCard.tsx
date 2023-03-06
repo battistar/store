@@ -20,7 +20,7 @@ import Product from 'models/Product';
 import Rating from './Rating';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from 'providers/user';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -115,4 +115,4 @@ const ProductCard = ({ product, onClick }: ProductCardProps): JSX.Element => {
   );
 };
 
-export default ProductCard;
+export default memo(ProductCard);
