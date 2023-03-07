@@ -13,7 +13,7 @@ import { Search as SearchIcon } from '@mui/icons-material';
 import Loader from 'components/Loader';
 import ProductCard from 'components/ProductCard';
 import { ChangeEvent, KeyboardEvent, ReactNode, useCallback, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useProduct } from 'providers/store';
 import { useCart } from 'providers/cart';
 import axios from 'axios';
@@ -75,17 +75,23 @@ const SearchBox = ({ value, onChange, onClick, sx }: SearchBoxProps): JSX.Elemen
 
 const Store = (): JSX.Element => {
   const [searchText, setSearchText] = useState('');
-  const { data, loadPage, isLoading: storeIsLoading } = useProduct();
+  const { data, loadPage, search, isLoading: storeIsLoading } = useProduct();
   const { addToCart, isLoading: cartIsLoading, error: cartError } = useCart();
   const { enqueueSnackbar } = useSnackbar();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const query = new URLSearchParams(location.search);
-  const page = parseInt(query.get('page') || '1');
+  const queryParams = new URLSearchParams(location.search);
+  const page = parseInt(queryParams.get('page') || '1');
+  const query = queryParams.get('search') || '';
 
   useEffect(() => {
     loadPage(page);
   }, [loadPage, page]);
+
+  useEffect(() => {
+    search(query);
+  }, [search, query]);
 
   useEffect(() => {
     if (cartError) {
@@ -119,37 +125,47 @@ const Store = (): JSX.Element => {
   }, []);
 
   const onSearchClick = useCallback((): void => {
-    console.log('search');
-  }, []);
+    navigate(`/store?search=${searchText}`);
+  }, [searchText, navigate]);
 
   return (
     <>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3 } }}>
-        <Stack gap={2} alignItems="center">
-          <SearchBox
-            value={searchText}
-            onChange={onSearchChange}
-            onClick={onSearchClick}
-            sx={{ width: '100%', maxWidth: (theme) => theme.breakpoints.values.sm }}
-          />
-          <Grid container spacing={2}>
-            {data.products.map((product) => {
-              return (
-                <Grid key={product.id} item xs={12} sm={6} md={4}>
-                  <ProductCard product={product} onClick={handleClick} />
-                </Grid>
-              );
-            })}
-          </Grid>
-          <Pagination
-            count={data.totalPages}
-            page={data.currentPage}
-            renderItem={(item): ReactNode => (
-              <PaginationItem component={Link} to={`/store${item.page === 1 ? '' : `?page=${item.page}`}`} {...item} />
-            )}
-          />
-        </Stack>
-      </Container>
+      {!storeIsLoading && (
+        <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3 } }}>
+          <Stack gap={2} alignItems="center">
+            <SearchBox
+              value={searchText}
+              onChange={onSearchChange}
+              onClick={onSearchClick}
+              sx={{ width: '100%', maxWidth: (theme) => theme.breakpoints.values.sm }}
+            />
+            <Grid container spacing={2}>
+              {data.products.map((product) => {
+                return (
+                  <Grid key={product.id} item xs={12} sm={6} md={4}>
+                    <ProductCard product={product} onClick={handleClick} />
+                  </Grid>
+                );
+              })}
+            </Grid>
+            <Pagination
+              count={data.totalPages}
+              page={data.currentPage}
+              renderItem={(item): ReactNode => (
+                <PaginationItem
+                  component={Link}
+                  to={
+                    query
+                      ? `/store${item.page === 1 ? `?search=${searchText}` : `?search=${searchText}&page=${item.page}`}`
+                      : `/store${item.page === 1 ? '' : `?page=${item.page}`}`
+                  }
+                  {...item}
+                />
+              )}
+            />
+          </Stack>
+        </Container>
+      )}
 
       {(storeIsLoading || cartIsLoading) && <Loader />}
     </>

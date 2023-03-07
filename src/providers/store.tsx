@@ -1,4 +1,4 @@
-import { getProduct, getProducts } from 'http/client';
+import { getProduct, getProducts, searchProduct } from 'http/client';
 import Product from 'models/Product';
 import { createContext, useCallback, useContext, useEffect, useReducer } from 'react';
 
@@ -21,6 +21,7 @@ interface ProductListPage {
 type ProductState = {
   data: ProductListPage;
   page?: number;
+  query?: string;
   isLoading: boolean;
   error?: Error;
 };
@@ -28,12 +29,14 @@ type ProductState = {
 type ProductAction =
   | { type: 'SET_DATA'; payload: ProductListPage }
   | { type: 'SET_PAGE'; payload?: number }
+  | { type: 'SET_QUERY'; payload?: string }
   | { type: 'SET_ERROR'; payload?: Error }
   | { type: 'SET_IS_LOADING'; payload: boolean };
 
 const useProductSource = (): {
   data: ProductListPage;
   loadPage: (page: number) => void;
+  search: (query: string) => void;
   fetchProduct: (id: number) => Promise<Product | null>;
   isLoading: boolean;
   error?: Error;
@@ -45,6 +48,8 @@ const useProductSource = (): {
           return { ...state, data: action.payload };
         case 'SET_PAGE':
           return { ...state, page: action.payload };
+        case 'SET_QUERY':
+          return { ...state, query: action.payload };
         case 'SET_IS_LOADING':
           return { ...state, isLoading: action.payload };
         case 'SET_ERROR':
@@ -72,7 +77,13 @@ const useProductSource = (): {
 
       try {
         const skip = (source.page - 1) * DEFAULT_PAGE_SIZE;
-        const response = await getProducts(skip);
+
+        let response;
+        if (source.query) {
+          response = await searchProduct(source.query, skip);
+        } else {
+          response = await getProducts(skip);
+        }
 
         const productPage = {
           products: response.data.products,
@@ -91,10 +102,14 @@ const useProductSource = (): {
     };
 
     fetchData();
-  }, [source.page]);
+  }, [source.page, source.query]);
 
   const loadPage = useCallback((page = 1): void => {
     dispatch({ type: 'SET_PAGE', payload: page });
+  }, []);
+
+  const search = useCallback((query: string): void => {
+    dispatch({ type: 'SET_QUERY', payload: query });
   }, []);
 
   const fetchProduct = useCallback(
@@ -129,6 +144,7 @@ const useProductSource = (): {
   return {
     data: source.data,
     loadPage: loadPage,
+    search: search,
     fetchProduct: fetchProduct,
     isLoading: source.isLoading,
     error: source.error,
