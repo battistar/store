@@ -1,82 +1,15 @@
-import {
-  Stack,
-  Container,
-  Grid,
-  Pagination,
-  PaginationItem,
-  InputBase,
-  IconButton,
-  SxProps,
-  Theme,
-  Typography,
-  Box,
-} from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
+import { Stack, Container, Grid, Pagination, PaginationItem, Typography, Box } from '@mui/material';
 import Loader from 'components/Loader';
 import ProductCard from 'components/ProductCard';
-import { ChangeEvent, KeyboardEvent, ReactNode, useCallback, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useProduct } from 'providers/store';
 import { useCart } from 'providers/cart';
 import axios from 'axios';
 import { useSnackbar } from 'notistack';
-
-interface SearchBoxProps {
-  value: string;
-  onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  onClick: () => void;
-  sx?: SxProps<Theme>;
-}
-
-const SearchBox = ({ value, onChange, onClick, sx }: SearchBoxProps): JSX.Element => {
-  const handleChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-      onChange(event);
-    },
-    [onChange]
-  );
-
-  const handleClick = useCallback((): void => {
-    if (value) {
-      onClick();
-    }
-  }, [value, onClick]);
-
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-      if (value && event.key === 'Enter') {
-        onClick();
-      }
-    },
-    [value, onClick]
-  );
-
-  return (
-    <Stack
-      direction="row"
-      sx={{
-        border: (theme) => `1px solid ${theme.palette.grey[300]}`,
-        borderRadius: 20,
-        px: 2,
-        ...sx,
-      }}
-    >
-      <InputBase
-        placeholder="Search..."
-        value={value}
-        onKeyDown={handleKeyDown}
-        onChange={handleChange}
-        sx={{ flex: 1, color: (theme) => theme.palette.grey[500] }}
-      />
-      <IconButton onClick={handleClick} disabled={value === ''}>
-        <SearchIcon />
-      </IconButton>
-    </Stack>
-  );
-};
+import SearchBox from 'components/SearchBox';
 
 const Store = (): JSX.Element => {
-  const [searchText, setSearchText] = useState('');
   const { data, loadPage, search, isLoading: storeIsLoading } = useProduct();
   const { addToCart, isLoading: cartIsLoading, error: cartError } = useCart();
   const { enqueueSnackbar } = useSnackbar();
@@ -113,7 +46,7 @@ const Store = (): JSX.Element => {
     }
   }, [cartError, enqueueSnackbar]);
 
-  const handleClick = useCallback(
+  const handleAddToCartClick = useCallback(
     async (id: number): Promise<void> => {
       await addToCart(id);
 
@@ -122,13 +55,12 @@ const Store = (): JSX.Element => {
     [addToCart, enqueueSnackbar]
   );
 
-  const onSearchChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-    setSearchText(event.target.value);
-  }, []);
-
-  const onSearchClick = useCallback((): void => {
-    navigate(`/store?search=${searchText}`);
-  }, [searchText, navigate]);
+  const handleSearch = useCallback(
+    (text: string): void => {
+      navigate(`/store?search=${text}`);
+    },
+    [navigate]
+  );
 
   return (
     <>
@@ -136,9 +68,7 @@ const Store = (): JSX.Element => {
         <Container maxWidth="lg" sx={{ height: '100%', py: { xs: 2, sm: 3 } }}>
           <Stack gap={2} alignItems="center" sx={{ height: '100%' }}>
             <SearchBox
-              value={searchText}
-              onChange={onSearchChange}
-              onClick={onSearchClick}
+              onSearch={handleSearch}
               sx={{ width: '100%', maxWidth: (theme) => theme.breakpoints.values.sm }}
             />
             {data.products.length > 0 ? (
@@ -147,7 +77,7 @@ const Store = (): JSX.Element => {
                   {data.products.map((product) => {
                     return (
                       <Grid key={product.id} item xs={12} sm={6} md={4}>
-                        <ProductCard product={product} onClick={handleClick} />
+                        <ProductCard product={product} onClick={handleAddToCartClick} />
                       </Grid>
                     );
                   })}
@@ -160,9 +90,7 @@ const Store = (): JSX.Element => {
                       component={Link}
                       to={
                         query
-                          ? `/store${
-                              item.page === 1 ? `?search=${searchText}` : `?search=${searchText}&page=${item.page}`
-                            }`
+                          ? `/store${item.page === 1 ? `?search=${query}` : `?search=${query}&page=${item.page}`}`
                           : `/store${item.page === 1 ? '' : `?page=${item.page}`}`
                       }
                       {...item}
